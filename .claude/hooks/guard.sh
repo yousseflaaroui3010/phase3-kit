@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# PreToolUse guard. Exit 2 blocks the tool call and feeds stderr back to Claude.
+set -u
+source "$(dirname "$0")/config.sh" 2>/dev/null || PROTECTED_BRANCHES="main master"
+
+INPUT="$(cat)"
+
+PARSED="$(printf '%s' "$INPUT" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+t=d.get("tool_name","")
+ti=d.get("tool_input",{}) or {}
+cmd=ti.get("command","") or ""
+fp=ti.get("file_path","") or ""
+print(t); print(fp); print(cmd)
+' 2>/dev/null)" || exit 0
+
+TOOL="$(printf '%s\n' "$PARSED" | sed -n 1p)"
+FILEPATH="$(printf '%s\n' "$PARSED" | sed -n 2p)"
+CMD="$(printf '%s\n' "$PARSED" | sed -n '3,$p')"
+
+deny () { echo "BLOCKED by guard.sh: $1" >&2; exit 2; }
+
+# --- Protect the control plane from file-edit tools ---
+if [ "$TOOL" != "Bash" ]; then
+  case "$FILEPATH" in
+    *".claude/hooks/"*|*".claude/settings.json"*|*".git/hooks/"*|*".env"*)
+      deny "This file is part of the safety system. Ask the human to change it." ;;
+  esac
+  exit 0
+fi
+
+# --- Bash command checks ---
+echo "$CMD" | grep -qE -- '--no-verify' && deny "--no-verify is never allowed. Fix the failing check instead."
+echo "$CMD" | grep -qE 'git +push +(-f|--force)' && deny "Force push is not allowed."
+echo "$CMD" | grep -qE 'core\.hooksPath|\.git/hooks' && deny "Git hook paths are locked."
+echo "$CMD" | grep -qE '(^|[;& ])(HUSKY=0|SKIP=)' && deny "Skipping local checks is not allowed."
+echo "$CMD" | grep -qE '(curl|wget)[^|;]*\|\s*(ba)?sh' && deny "Piping downloads into a shell is not allowed."
+echo "$CMD" | grep -qE 'rm +-rf +(/|~)( |$)' && deny "Refusing destructive delete."
+echo "$CMD" | grep -qE '\.claude/(hooks|settings)' && \
+  echo "$CMD" | grep -qE '(>|>>|sed +-i|tee )' && deny "Do not modify the safety system via shell."
+
+for BR in $PROTECTED_BRANCHES; do
+  echo "$CMD" | grep -qE "git +push +[^ ]+ +($BR)(\$| )" && \
+    deny "Direct push to '$BR' is blocked. Push your task branch and open a PR."
+done
+
+exit 0

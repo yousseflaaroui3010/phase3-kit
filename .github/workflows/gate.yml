@@ -1,0 +1,24 @@
+name: gate
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit           # TODO adjust to your stack
+      - name: Tests
+        run: npm test --silent          # TODO adjust to your stack
+      - name: Commit message format
+        run: |
+          git log origin/main..HEAD --format=%B | grep -q "INTENT:" || \
+            (echo "Missing INTENT: line in commit body" && exit 1)
+      - name: Duplication gate (fails over 3%)
+        run: npx jscpd src --threshold 3 --exitCode 1
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
