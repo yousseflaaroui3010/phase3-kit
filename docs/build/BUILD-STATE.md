@@ -1,11 +1,11 @@
 # BUILD-STATE (the flight recorder: trust this file over chat memory)
 
-Last verified commit: head of task/T-001-monorepo-scaffold (PR pending)
+Last verified commit: acd58db on task/T-001-monorepo-scaffold (PR #3, verify green)
 Updated: 2026-07-14 by orchestrator
 
 ## Now (the one task in flight)
 - Task: T-001 Monorepo scaffold — BUILT, awaiting review + merge
-- Branch: task/T-001-monorepo-scaffold (PR to be opened this session)
+- Branch: task/T-001-monorepo-scaffold (PR #3 open, verify check green)
 - Where exactly: full workspace scaffolded per Arch S1-A1 §6 — apps/web
   (Next 16.2.10) + packages shared/db/i18n/resolution/grounding/
   entitlements/gate/agent; S1-A2 §4 edges encoded twice (package.json
