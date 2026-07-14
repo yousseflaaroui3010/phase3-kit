@@ -5,10 +5,10 @@ Updated: 2026-07-14 by orchestrator
 
 ## Now (the one task in flight)
 - Task: T-001 Monorepo scaffold (pnpm + Turborepo, module packages, TS strict)
-- Branch: task/T-001-monorepo-scaffold (not yet cut; awaiting BUILD-PLAN approval)
-- Where exactly: not started
-- What is proven working: intake gate passed; repo indexed (295 nodes); BUILD-PLAN drafted
-- What is NOT done yet: everything in BUILD-PLAN; plan awaiting human approval
+- Branch: task/T-001-monorepo-scaffold (not yet cut; blocked on PR #2 merge)
+- Where exactly: BUILD-PLAN approved by human; Step 0-2 docs on PR #2 (chore/step0-2-intake-and-plan); gate.yml patched to skip app checks pre-scaffold (f240ed4); awaiting verify check green + human merge
+- What is proven working: intake gate passed; repo indexed (295 nodes); BUILD-PLAN approved; commit-format + secret-scan gate steps still enforced pre-scaffold
+- What is NOT done yet: PR #2 merge, then cut task/T-001 from fresh main
 
 ## Next (ordered queue, top 3 only)
 1. T-002 Dependency law via dependency-cruiser (owner: b4)
