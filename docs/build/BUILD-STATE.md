@@ -19,4 +19,4 @@ Updated: <date time> by <agent>
 - <none>
 
 ## Done this week
-- <task id: one line>
+- T-000: kit setup pass complete (walls tested: a PASS, b fixed then PASS, c PASS)

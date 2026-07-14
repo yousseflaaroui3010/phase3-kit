@@ -1,9 +1,12 @@
 ---
 paths:
-  - "src/server/**"
-  - "src/api/**"
-  - "migrations/**"
-  - "db/**"
+  - "apps/web/app/api/**"
+  - "packages/agent/**"
+  - "packages/gate/**"
+  - "packages/resolution/**"
+  - "packages/grounding/**"
+  - "packages/entitlements/**"
+  - "packages/db/**"
   - "**/*.sql"
 ---
 # Backend rules
@@ -16,3 +19,10 @@ paths:
 - All queries go through the data layer. No inline SQL in route handlers.
 - Every endpoint: input validation, standard error shape, auth check.
 - No secrets in code or logs. Config comes from environment only.
+
+## Fail loud (dev), contain the outside world (always)
+- During development, crash immediately on bad input. Never catch an
+  error without logging the full traceback. Keep logs free of noise so
+  real bugs stand out like a spraying leak, never a slow rot.
+- Every external API or network call gets a short timeout and a written
+  fallback value. A slow third party must never slow your system.

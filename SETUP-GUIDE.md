@@ -1,4 +1,8 @@
 # SETUP GUIDE: Phase 3 + 4 Claude Code System
+
+> AUTOMATED: you can skip the hand-work below. Paste SETUP-PROMPT.md into
+> Claude Code and it runs these steps itself, asks you the few questions
+> it cannot detect, and tests the walls. This guide stays as the reference.
 Plain words, short steps. Total setup time: about an hour.
 
 ## The idea in one paragraph
@@ -145,3 +149,87 @@ over 3% duplicated lines. If one layer sleeps, the next one catches it.
 - Handoff: b4 tests in isolation, b1 reviews and squash-merges.
 - End of day: b1 squashes stragglers; you skim CHANGELOG-AI.md and
   DECISIONS.md like a site foreman reading the shift log.
+
+---
+
+# KIT v2 ADDITIONS (reviewer, skills, locked specs, journal gate)
+
+- New agent `reviewer`: read-only by construction. It inherits all tools
+  (including the code-graph MCP) but `disallowedTools` strips Edit and
+  Write, so "do not edit files" is a fact, not a request. It grades 1-10;
+  below 9 returns an exact file:line fix list to the builder.
+- `b4-delivery-eng` now runs with `isolation: worktree` (its shell
+  commands execute in a temporary git worktree, so test runs never dirty
+  your checkout) and `memory: project` (it remembers flaky suites across
+  sessions). Known bug: worktree isolation applies when b4 is spawned as
+  a subagent; it is ignored if you launch it as the top-level agent with
+  `claude --agent` (issue #50357).
+- Two Skills in `.claude/skills/`: `zero-lock-migration` (expand,
+  dual-write, backfill, contract) and `contract-types-regen`. Both are
+  preloaded into b2 via its `skills:` frontmatter line.
+- The guard hook now write-locks `docs/phase2/`. Builders physically
+  cannot edit signed specs; they must escalate.
+- The Stop gate now also checks the journal: if code changed this session
+  but BUILD-STATE.md and CHANGELOG-AI.md were never touched, the session
+  is pushed back to write the entry (same 3-attempt safety cap).
+- Gotcha: agent files edited on disk load at session start; restart
+  Claude Code (or use /agents) after changing them.
+- Symbol backend: the reviewer works with the codebase-memory graph. If
+  you prefer Serena's find_symbol / find_referencing_symbols (LSP-exact
+  references), install it INSTEAD, not alongside; every extra MCP server
+  costs context in every session.
+
+---
+
+# KIT v3 ADDITIONS (prompt architecture, new roles, anti-skip protocol)
+
+- All 11 agent prompts rebuilt in XML blocks (role, context, instructions,
+  constraints, output format) with reasoning discipline baked in: an
+  epistemic ledger (facts vs inferences vs gaps), a no-guessing rule for
+  schemas and commands, verify-before-report for code writers, and a
+  fixed report contract per agent. Runtime values are {{VARIABLES}}; the
+  full list lives in VARIABLES.md.
+- Two new roles: tech-scout (vets every new dependency with hostile
+  queries, CVEs, license, and stack fit) and docs-verifier (confirms
+  external APIs against current official docs before anyone codes against
+  memory, and audits internal doc drift). Both are read-only via
+  disallowedTools.
+- Anti-skip, anti-duplication upgrade: the absence protocol is now a
+  global rule (graph + grep + written scope line before creating any
+  symbol), and a new dup-sentry hook physically blocks creating a file
+  whose name already exists elsewhere in the repo (common names like
+  index.* are whitelisted inside the script).
+- Six skills now: zero-lock-migration, contract-types-regen,
+  dependency-vetting, api-doc-verification, e2e-failure-triage,
+  prompt-registry-entry.
+- prompts/ now ships a README, a format rule, and one example entry, so
+  the registry is a template instead of an empty folder.
+- REMAINING-CHECKLIST.md answers "what do I still install and fill in".
+
+---
+
+# KIT v5: fewer bodies, same walls (token consolidation)
+- tech-scout and docs-verifier merged into one read-only `scout`; the two
+  procedures stayed intact as skills that load only when the mode needs
+  them.
+- b2 no longer preloads its two skills; it invokes them when a task
+  actually touches migrations or contracts.
+- o1-o4 moved to .claude/agents-phase4/ so their descriptions stop riding
+  on every Phase 3 turn; move them back at launch (README inside).
+- b1 now consumes the reviewer's blast-radius map instead of rebuilding
+  it, and the orchestrator handles trivial single-file tasks itself.
+- Deliberately NOT merged: reviewer stays separate from builders and b1
+  (read-only fresh eyes is the quality mechanism), and b2/b3 stay split
+  (the generated-types contract between them is the coordination system).
+
+---
+
+# KIT v6: compressed prompts + five senior upgrades
+- Every agent prompt, CLAUDE.md, and the kickoff rewritten telegraphic:
+  same walls, roughly 40% fewer words, so every invocation and every
+  main-session turn gets cheaper. Skills and hooks untouched: skills
+  load only on demand, hooks cost compute not context.
+- Added: plan-two-approaches beat (b2, b3), silent-requirements sweep in
+  kickoff Step 0, rule of three in the duplication law and the
+  reviewer's craft check, idempotent mutations (b2 + reviewer), spike
+  branch before framework-level adoption (scout).
