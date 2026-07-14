@@ -11,10 +11,13 @@
     "typecheck": "turbo run typecheck",
     "lint": "eslint .",
     "test": "turbo run test",
-    "test:e2e": "turbo run test:e2e"
+    "test:e2e": "turbo run test:e2e",
+    "depcruise": "depcruise --config .dependency-cruiser.cjs apps packages",
+    "graph:deps": "depcruise --config .dependency-cruiser.cjs --output-type mermaid apps packages > docs/build/dependency-graph.mmd"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "dependency-cruiser": "^18.1.0",
     "eslint": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:",

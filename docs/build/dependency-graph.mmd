@@ -1,0 +1,65 @@
+flowchart LR
+
+subgraph 0["apps"]
+subgraph 1["web"]
+subgraph 2["app"]
+3["layout.tsx"]
+A["page.tsx"]
+end
+B["next.config.ts"]
+end
+end
+subgraph 4["node_modules"]
+subgraph 5[".pnpm"]
+subgraph 6["react@19.2.7"]
+subgraph 7["node_modules"]
+subgraph 8["react"]
+9["index.js"]
+end
+end
+end
+end
+end
+subgraph C["packages"]
+subgraph D["agent"]
+subgraph E["src"]
+F["index.ts"]
+end
+end
+subgraph G["db"]
+subgraph H["src"]
+I["index.ts"]
+end
+end
+subgraph J["entitlements"]
+subgraph K["src"]
+L["index.ts"]
+end
+end
+subgraph M["gate"]
+subgraph N["src"]
+O["index.ts"]
+end
+end
+subgraph P["grounding"]
+subgraph Q["src"]
+R["index.ts"]
+end
+end
+subgraph S["i18n"]
+subgraph T["src"]
+U["index.ts"]
+end
+end
+subgraph V["resolution"]
+subgraph W["src"]
+X["index.ts"]
+end
+end
+subgraph Y["shared"]
+subgraph Z["src"]
+10["index.ts"]
+end
+end
+end
+3-->9
