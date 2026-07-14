@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/db" },
+    { "path": "packages/i18n" },
+    { "path": "packages/resolution" },
+    { "path": "packages/grounding" },
+    { "path": "packages/entitlements" },
+    { "path": "packages/gate" },
+    { "path": "packages/agent" }
+  ]
+}

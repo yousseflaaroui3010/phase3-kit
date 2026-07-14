@@ -6,3 +6,4 @@ YYYY-MM-DD | T-000 | src/example.ts | what changed | why
 2026-07-14 | plan | docs/build/BUILD-PLAN.md, BUILD-STATE.md | Step 2: 5 epics, 52 atomic tasks T-001..T-068 drafted from PRD+ADRs; BUILD-STATE initialized with T-001 | plan precedes code
 2026-07-14 | plan | .github/workflows/gate.yml | gate verify job skips app checks (install/typecheck/test/dup) when package.json absent; commit-format + gitleaks always run; fetch-depth 0 for origin/main ref | docs-only PRs were unmergeable pre-scaffold (PR #2 blocked)
 2026-07-14 | plan | .github/workflows/gate.yml | GITHUB_TOKEN env added to gitleaks-action step | gitleaks-action v2 hard-requires it on pull_request events; latent kit bug, would fail every PR
+2026-07-14 | T-001 | root configs, packages/* (8 pkgs), apps/web, CONTRIBUTING.md | pnpm+Turborepo workspace, TS strict project refs, ESLint 9 flat, edge table encoded in deps+references | BUILD-PLAN T-001; exit gate = typecheck+lint green across empty packages
