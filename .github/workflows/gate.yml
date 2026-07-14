@@ -30,6 +30,9 @@ jobs:
       - name: Lint
         if: steps.scaffold.outputs.present == 'true'
         run: pnpm lint
+      - name: Dependency law (dependency-cruiser)
+        if: steps.scaffold.outputs.present == 'true'
+        run: pnpm run depcruise
       - name: Tests
         if: steps.scaffold.outputs.present == 'true'
         run: pnpm test

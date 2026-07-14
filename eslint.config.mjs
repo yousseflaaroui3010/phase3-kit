@@ -19,5 +19,21 @@ export default tseslint.config(
     rules: {
       "@typescript-eslint/no-explicit-any": "error"
     }
+  },
+  {
+    // Root-level CommonJS config files (e.g. .dependency-cruiser.cjs) run
+    // under Node's CJS loader, not the ESM/browser default.
+    files: ["**/*.cjs"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: {
+        module: "writable",
+        exports: "writable",
+        require: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        process: "readonly"
+      }
+    }
   }
 );
