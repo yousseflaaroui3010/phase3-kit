@@ -19,7 +19,6 @@ jobs:
           fi
       - uses: pnpm/action-setup@v4
         if: steps.scaffold.outputs.present == 'true'
-        with: { version: 10 }
       - uses: actions/setup-node@v4
         if: steps.scaffold.outputs.present == 'true'
         with: { node-version: 24 }
