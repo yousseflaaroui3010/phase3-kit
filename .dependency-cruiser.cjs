@@ -16,6 +16,8 @@
  *   entitlements  -> db, shared
  *   db            -> shared
  *   shared        -> nothing
+ *   i18n          -> shared (no row in the signed table; T-001 ruling in
+ *                     DECISIONS.md, matches its package.json dep + TS ref)
  *
  * Everything else forbidden. Only `agent` may import provider SDKs
  * (model/search vendor packages) -- see the providerSdkPattern note
@@ -119,11 +121,11 @@ module.exports = {
       name: 'i18n-boundary',
       severity: 'error',
       comment:
-        'i18n is a leaf consumed by apps/web; the edge table gives it no outgoing edges.',
+        'i18n has no row in the S1-A2 §4 edge table; T-001 (DECISIONS.md) ruled it may import shared only, matching its package.json dep and TS project reference.',
       from: { path: '^packages/i18n/' },
       to: {
         path: '^packages/',
-        pathNot: '^packages/i18n/',
+        pathNot: '^packages/(i18n|shared)/',
       },
     },
     {
