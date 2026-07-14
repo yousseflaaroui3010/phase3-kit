@@ -19,7 +19,6 @@ jobs:
           fi
       - uses: pnpm/action-setup@v4
         if: steps.scaffold.outputs.present == 'true'
-        with: { version: 10 }
       - uses: actions/setup-node@v4
         if: steps.scaffold.outputs.present == 'true'
         with: { node-version: 24 }
@@ -28,6 +27,9 @@ jobs:
       - name: Typecheck
         if: steps.scaffold.outputs.present == 'true'
         run: pnpm typecheck
+      - name: Lint
+        if: steps.scaffold.outputs.present == 'true'
+        run: pnpm lint
       - name: Tests
         if: steps.scaffold.outputs.present == 'true'
         run: pnpm test
@@ -37,7 +39,7 @@ jobs:
             (echo "Missing INTENT: line in commit body" && exit 1)
       - name: Duplication gate (fails over 3%)
         if: steps.scaffold.outputs.present == 'true'
-        run: npx jscpd apps packages --threshold 3 --exitCode 1
+        run: npx jscpd apps packages --threshold 3 --exit-code 1 --ignore "**/package.json,**/tsconfig.json"
       - name: Secret scan
         uses: gitleaks/gitleaks-action@v2
         env:

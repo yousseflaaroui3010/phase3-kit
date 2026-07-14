@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [
+    { "path": "../grounding" },
+    { "path": "../gate" },
+    { "path": "../resolution" },
+    { "path": "../entitlements" },
+    { "path": "../db" },
+    { "path": "../shared" }
+  ],
+  "include": ["src"]
+}
