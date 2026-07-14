@@ -25,7 +25,7 @@ CMD="${CMD//\\//}"
 deny () { echo "BLOCKED by guard.sh: $1" >&2; exit 2; }
 
 # --- Protect the control plane and signed specs from file-edit tools ---
-if [ "$TOOL" != "Bash" ]; then
+if [ "$TOOL" != "Bash" ] && [ "$TOOL" != "PowerShell" ]; then
   case "$FILEPATH" in
     *".claude/hooks/"*|*".claude/settings.json"*|*".git/hooks/"*|*".env"*)
       deny "This file is part of the safety system. Ask the human to change it." ;;
