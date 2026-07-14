@@ -7,20 +7,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Detect scaffold
+        id: scaffold
+        run: |
+          if [ -f package.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No package.json yet (pre-scaffold repo): app checks skipped, commit-format and secret scan still run."
+          fi
       - uses: pnpm/action-setup@v4
+        if: steps.scaffold.outputs.present == 'true'
         with: { version: 10 }
       - uses: actions/setup-node@v4
+        if: steps.scaffold.outputs.present == 'true'
         with: { node-version: 24 }
-      - run: pnpm install --frozen-lockfile
+      - if: steps.scaffold.outputs.present == 'true'
+        run: pnpm install --frozen-lockfile
       - name: Typecheck
+        if: steps.scaffold.outputs.present == 'true'
         run: pnpm typecheck
       - name: Tests
+        if: steps.scaffold.outputs.present == 'true'
         run: pnpm test
       - name: Commit message format
         run: |
           git log origin/main..HEAD --format=%B | grep -q "INTENT:" || \
             (echo "Missing INTENT: line in commit body" && exit 1)
       - name: Duplication gate (fails over 3%)
+        if: steps.scaffold.outputs.present == 'true'
         run: npx jscpd apps packages --threshold 3 --exitCode 1
       - name: Secret scan
         uses: gitleaks/gitleaks-action@v2
