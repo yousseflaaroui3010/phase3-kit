@@ -1,7 +1,7 @@
 ---
 paths:
-  - "src/app/**"
-  - "src/components/**"
+  - "apps/web/**"
+  - "packages/i18n/**"
   - "**/*.tsx"
   - "**/*.jsx"
   - "**/*.css"

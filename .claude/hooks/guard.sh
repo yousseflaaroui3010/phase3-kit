@@ -18,19 +18,27 @@ print(t); print(fp); print(cmd)
 TOOL="$(printf '%s\n' "$PARSED" | sed -n 1p)"
 FILEPATH="$(printf '%s\n' "$PARSED" | sed -n 2p)"
 CMD="$(printf '%s\n' "$PARSED" | sed -n '3,$p')"
+# Windows tools deliver backslash paths; normalize so the patterns bite.
+FILEPATH="${FILEPATH//\\//}"
+CMD="${CMD//\\//}"
 
 deny () { echo "BLOCKED by guard.sh: $1" >&2; exit 2; }
 
-# --- Protect the control plane from file-edit tools ---
-if [ "$TOOL" != "Bash" ]; then
+# --- Protect the control plane and signed specs from file-edit tools ---
+if [ "$TOOL" != "Bash" ] && [ "$TOOL" != "PowerShell" ]; then
   case "$FILEPATH" in
     *".claude/hooks/"*|*".claude/settings.json"*|*".git/hooks/"*|*".env"*)
       deny "This file is part of the safety system. Ask the human to change it." ;;
+    *"docs/phase2/"*)
+      deny "Phase 2 specs are signed and write-locked. If a contract is wrong, escalate to the human; never edit the spec to match the code." ;;
   esac
   exit 0
 fi
 
 # --- Bash command checks ---
+echo "$CMD" | grep -qE 'docs/phase2' && \
+  echo "$CMD" | grep -qE '(>|>>|sed +-i|tee |rm |mv |cp +[^ ]+ +docs/phase2)' && \
+  deny "Phase 2 specs are signed and write-locked. Escalate instead of editing them."
 echo "$CMD" | grep -qE -- '--no-verify' && deny "--no-verify is never allowed. Fix the failing check instead."
 echo "$CMD" | grep -qE 'git +push +(-f|--force)' && deny "Force push is not allowed."
 echo "$CMD" | grep -qE 'core\.hooksPath|\.git/hooks' && deny "Git hook paths are locked."

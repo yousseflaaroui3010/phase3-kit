@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Stop gate. Claude may not finish the turn while tests fail.
+# Stop gate. Claude may not finish the turn while tests fail or the
+# journal (BUILD-STATE / CHANGELOG-AI) was never touched this session.
 # Loop safety: honors stop_hook_active and caps attempts per session.
 set -u
 source "$(dirname "$0")/config.sh" 2>/dev/null || { TEST_CMD=""; STOP_MAX_ATTEMPTS=3; }
+TEST_CMD="${STOPGATE_TEST_CMD_OVERRIDE:-$TEST_CMD}"
 
 INPUT="$(cat)"
 READ="$(printf '%s' "$INPUT" | python3 -c '
@@ -15,7 +17,6 @@ print(d.get("session_id","nosession")[:12])
 ACTIVE="$(printf '%s\n' "$READ" | sed -n 1p)"
 SID="$(printf '%s\n' "$READ" | sed -n 2p)"
 [ "$ACTIVE" = "1" ] && exit 0
-[ -z "${TEST_CMD:-}" ] && exit 0
 
 COUNTF="/tmp/claude-stopgate-$SID"
 N=$(cat "$COUNTF" 2>/dev/null || echo 0)
@@ -25,6 +26,26 @@ if [ "$N" -ge "${STOP_MAX_ATTEMPTS:-3}" ]; then
   exit 0
 fi
 
+ROOT="${CLAUDE_PROJECT_DIR:-.}"
+MARKER="/tmp/claude-sess-start-$SID"
+STATE="$ROOT/docs/build/BUILD-STATE.md"
+LOGF="$ROOT/docs/build/CHANGELOG-AI.md"
+
+# Journal gate: code was edited this session but no journal file was touched.
+if [ -f "$MARKER" ] && [ -f "$ROOT/.claude/logs/changes.jsonl" ] && \
+   [ "$ROOT/.claude/logs/changes.jsonl" -nt "$MARKER" ]; then
+  if [ ! "$STATE" -nt "$MARKER" ] && [ ! "$LOGF" -nt "$MARKER" ]; then
+    echo $((N+1)) > "$COUNTF"
+    {
+      echo "You are not done: files were changed this session but the journal was not."
+      echo "Update docs/build/BUILD-STATE.md (Now/Next/Where exactly) and append"
+      echo "one line to docs/build/CHANGELOG-AI.md, then finish."
+    } >&2
+    exit 2
+  fi
+fi
+
+[ -z "${TEST_CMD:-}" ] && exit 0
 OUT="$(eval "$TEST_CMD" 2>&1)"
 if [ $? -ne 0 ]; then
   echo $((N+1)) > "$COUNTF"
